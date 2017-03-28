@@ -53,13 +53,18 @@ public class CrawlerService {
             } else if (Record.TYPE_COMMENT.equals(record.getType())) {
                 crawlCommentInfo(doc, record);
             }
-
             record.setCrawled(Record.STATUS_CRAWLED);
+
         } catch (HttpStatusException e) {
             record.setCrawled(Record.STATUS_ERROR);
             LOG.info(e.getMessage());
+        } catch (Exception e){
+            record.setCrawled(Record.STATUS_ERROR);
+            LOG.info(e.getMessage());
+            throw e;
+        }finally {
+            recordDAO.save(record);
         }
-        recordDAO.save(record);
     }
 
     private Record getOneRecordToCrawl() {
@@ -115,7 +120,11 @@ public class CrawlerService {
                 } else if ("编剧".equals(key)) {
                     movie.setScenarist(subInfo.getElementsByAttributeValue("class", "attrs").text());
                 } else if ("主演".equals(key)) {
-                    movie.setActors(subInfo.getElementsByAttributeValue("class", "attrs").text());
+                    String actors = subInfo.getElementsByAttributeValue("class", "attrs").text();
+                    if (actors.length() > 1000) {
+                        actors = actors.substring(0, 1000);
+                    }
+                    movie.setActors(actors);
                 }
             }
         }
@@ -138,6 +147,7 @@ public class CrawlerService {
         movie.setSubjectId(subjectId);
         movie.setRecordId(record.getId());
         movie.setSummary(doc.getElementsByAttributeValue("property", "v:summary").text().trim());
+
         LOG.info("Movie :《" + movie.getName() + "》 Points: " + movie.getRatingNum() + "\n" + "Summary:" + movie.getSummary());
         movieDAO.save(movie);
     }

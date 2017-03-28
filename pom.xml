@@ -54,6 +54,7 @@
             <version>5.1.36</version>
         </dependency>
     </dependencies>
+
     <build>
         <finalName>crawler</finalName>
         <sourceDirectory>src/main/java</sourceDirectory>
@@ -69,18 +70,6 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <webResources>
-                        <resource>
-                            <directory>lib</directory>
-                            <targetPath>WEB-INF/lib</targetPath>
-                        </resource>
-                    </webResources>
                 </configuration>
             </plugin>
         </plugins>
