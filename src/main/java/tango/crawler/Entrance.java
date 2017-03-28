@@ -22,18 +22,22 @@ public class Entrance {
 
         System.out.println("Start");
 
-        //因为想 每次抓取 作为 一个事务 ，故循环放到service外面；
+        //因为想「每次抓取」作为「一个事务」，故循环放到service外面；
         for (int i = 0; i < Constant.MAX_COUNT; i++) {
             try {
-                long a = (new Random().nextInt(2) + 1) * 1000;
-                System.out.println("Sleep " + a + " ms");
-                Thread.sleep(a);
-                entrance.crawlerService.crawlOne();
+                sleepAwhile();
+                entrance.crawlerService.crawlOnePage();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
         System.out.println("End");
+    }
+
+    public static void sleepAwhile() throws InterruptedException {
+        long a = (new Random().nextInt(2) + 1) * 1000;
+        System.out.println("Sleep " + a + " ms");
+        Thread.sleep(a);
     }
 }

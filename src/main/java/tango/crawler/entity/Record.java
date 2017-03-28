@@ -12,6 +12,10 @@ public class Record {
     public static final String TYPE_COMMENT = "Comment";
     public static final String TYPE_OTHER = "Other";
 
+    public static final int STATUS_UNCRAWLED = 0;
+    public static final int STATUS_CRAWLED = 1;
+    public static final int STATUS_ERROR = 2;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

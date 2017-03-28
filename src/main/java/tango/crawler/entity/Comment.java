@@ -10,6 +10,8 @@ import javax.persistence.*;
 @Entity
 @Table(name = "comment")
 public class Comment {
+    public static final Integer ContentLength = 2000;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
