@@ -8,14 +8,14 @@
 <property name="hibernate.hbm2ddl.auto" value="update" />
 ```
 
-2.Entrance
+2. Entrance
 - 入口文件
 
-3.log4j.properties
+3. log4j.properties
 - 日志文件默认存放在F盘
 ```
 log4j.appender.logfile.File=F:/movieCrawler.log
 ```
 
-4.思路
+4. 思路
 - 从一个电影详情页面，抓取其中的电影详情。并把该页面中链接到其他电影页的URL记录下来用于抓取
