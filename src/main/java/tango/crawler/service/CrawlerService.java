@@ -8,7 +8,9 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tango.crawler.dao.CommentDAO;
 import tango.crawler.dao.MovieDAO;
@@ -58,13 +60,18 @@ public class CrawlerService {
         } catch (HttpStatusException e) {
             record.setCrawled(Record.STATUS_ERROR);
             LOG.info(e.getMessage());
-        } catch (Exception e){
-            record.setCrawled(Record.STATUS_ERROR);
+        } catch(Exception e){
+            newTxnToSave(record);
             LOG.info(e.getMessage());
             throw e;
-        }finally {
-            recordDAO.save(record);
         }
+        recordDAO.save(record);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    private void newTxnToSave(Record r){
+        r.setCrawled(Record.STATUS_ERROR);
+        recordDAO.save(r);
     }
 
     private Record getOneRecordToCrawl() {
@@ -116,15 +123,13 @@ public class CrawlerService {
                     continue;
                 }
                 if ("导演".equals(key)) {
-                    movie.setDirector(subInfo.getElementsByAttributeValue("class", "attrs").text());
+                    String director = subInfo.getElementsByAttributeValue("class", "attrs").text();
+                    movie.setDirector(CommonUtil.truncateString(director));
                 } else if ("编剧".equals(key)) {
-                    movie.setScenarist(subInfo.getElementsByAttributeValue("class", "attrs").text());
+                    movie.setScenarist(CommonUtil.truncateString(subInfo.getElementsByAttributeValue("class", "attrs").text()));
                 } else if ("主演".equals(key)) {
                     String actors = subInfo.getElementsByAttributeValue("class", "attrs").text();
-                    if (actors.length() > 1000) {
-                        actors = actors.substring(0, 1000);
-                    }
-                    movie.setActors(actors);
+                    movie.setActors(CommonUtil.truncateString(actors,1000));
                 }
             }
         }
@@ -168,11 +173,7 @@ public class CrawlerService {
                     //对评论内容去除4字节utf-8字符（包括Emoji表情），因为mysql utf-8编码不支持
                     //（另一方式：mysql 改用 utf8mb4）
                     String content = item.children().get(1).getElementsByTag("p").text().trim();
-                    if (content.length() > Comment.ContentLength) {
-                        content = content.substring(0, Comment.ContentLength);
-                    }
-                    content = CommonUtil.delUtf8mb4Chars(content);
-
+                    content = CommonUtil.delUtf8mb4Chars(CommonUtil.truncateString(content,Comment.ContentLength));
                     comm.setContent(content);//use "comment.children().get(1).text()" can get all commentInfo like "1819 有用 桃桃淘电影 2016-10-29 即便评分再高也完全喜欢不来。我们还是太热衷主题与意义了，以至于忽视了传递主题的方式与合理性。影片为了所谓的人性深度，而刻意设计剧情和人物转折，忽视基本的人物行为轨迹，都非常让人不舒服。喜欢有深度的电影，但希望能以更巧妙的方式讲出来，而不该是现在这样。以及形式上，这不就是舞台搬演么"
 
                     comm.setVote(Integer.parseInt(item.getElementsByAttributeValue("class", "votes").text()));

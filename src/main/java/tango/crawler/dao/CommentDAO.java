@@ -9,4 +9,5 @@ import tango.crawler.entity.Comment;
  */
 @Repository
 public interface CommentDAO extends JpaRepository<Comment,Integer> {
+
 }
